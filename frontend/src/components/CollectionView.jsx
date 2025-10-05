@@ -23,6 +23,15 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
     setEditData({});
   };
 
+  // Helper function to format sculpt display
+  const formatSculptDisplay = (item) => {
+    const edition = item.edition ? `[${item.edition}]` : '';
+    if (item.sculpt_name === item.model_name) {
+      return edition;
+    }
+    return `${edition} ${item.sculpt_name}`.trim();
+  };
+
   if (collection.length === 0) {
     return (
       <div className="empty-state">
@@ -38,10 +47,11 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
         <table>
           <thead>
             <tr>
-              <th>Sculpt Name</th>
               <th>Model</th>
+              <th>Sculpt</th>
               <th>Faction</th>
-              <th>Edition</th>
+              <th>Keywords</th>
+              <th>SKU</th>
               <th>Collection Status</th>
               <th>Mini Status</th>
               <th>Notes</th>
@@ -53,10 +63,11 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
               <tr key={item.id}>
                 {editingId === item.id ? (
                   <>
-                    <td>{item.sculpt_name}</td>
                     <td>{item.model_name}</td>
+                    <td>{formatSculptDisplay(item)}</td>
                     <td>{item.faction}</td>
-                    <td>{item.edition}</td>
+                    <td>{item.keywords}</td>
+                    <td>{item.sku}</td>
                     <td>
                       <select
                         value={editData.collectionStatus}
@@ -95,10 +106,11 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
                   </>
                 ) : (
                   <>
-                    <td>{item.sculpt_name}</td>
                     <td>{item.model_name}</td>
+                    <td>{formatSculptDisplay(item)}</td>
                     <td>{item.faction}</td>
-                    <td>{item.edition}</td>
+                    <td>{item.keywords}</td>
+                    <td>{item.sku}</td>
                     <td><span className="status-badge">{item.collection_status}</span></td>
                     <td><span className="status-badge">{item.mini_status}</span></td>
                     <td>{item.notes}</td>
@@ -122,14 +134,17 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
       <div className="grid-view">
         {collection.map(item => (
           <div key={item.id} className="grid-card">
-            <h3>{item.sculpt_name}</h3>
-            <p className="model-name">{item.model_name}</p>
+            <h3>{item.model_name}</h3>
+            <p className="sculpt-name">{formatSculptDisplay(item)}</p>
             <p className="faction">{item.faction}</p>
+            {item.keywords && <p className="keywords">{item.keywords}</p>}
             <div className="card-details">
-              <div className="detail-row">
-                <span className="label">Edition:</span>
-                <span>{item.edition}</span>
-              </div>
+              {item.sku && (
+                <div className="detail-row">
+                  <span className="label">SKU:</span>
+                  <span className="sku-text">{item.sku}</span>
+                </div>
+              )}
               <div className="detail-row">
                 <span className="label">Collection:</span>
                 <span className="status-badge">{item.collection_status}</span>
@@ -215,9 +230,11 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
                 .filter(item => item.mini_status === status)
                 .map(item => (
                   <div key={item.id} className="kanban-card">
-                    <h4>{item.sculpt_name}</h4>
-                    <p className="model-name">{item.model_name}</p>
+                    <h4>{item.model_name}</h4>
+                    <p className="sculpt-name">{formatSculptDisplay(item)}</p>
                     <p className="faction">{item.faction}</p>
+                    {item.keywords && <p className="keywords-small">{item.keywords}</p>}
+                    {item.sku && <p className="sku-small">{item.sku}</p>}
                     <span className="status-badge">{item.collection_status}</span>
                     {item.notes && <p className="notes">{item.notes}</p>}
                     <div className="card-actions">

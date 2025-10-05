@@ -244,7 +244,7 @@ function importSculpts(sculpts, callback) {
   });
 
   function insertSculpt(sculpt, modelId, index) {
-    const sku = sculpt.sku ? String(sculpt.sku).replace(/;/g, ', ') : '';
+    const sku = sculpt.sku ? String(sculpt.sku).replace(/;/g, ' / ') : '';
     const edition = sculpt.edition ? String(sculpt.edition).replace(/;/g, ', ') : '';
     
     db.run(

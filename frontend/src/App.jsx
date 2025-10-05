@@ -10,8 +10,10 @@ function App() {
   const [collection, setCollection] = useState([]);
   const [view, setView] = useState('table');
   const [filters, setFilters] = useState({
-    faction: '',
-    keyword: '',
+    factions: [],
+    keywords: [],
+    editions: [],
+    skus: [],
     collectionStatus: '',
     miniStatus: '',
     search: ''
@@ -73,10 +75,38 @@ function App() {
 
   // Filter collection
   const filteredCollection = collection.filter(item => {
-    if (filters.faction && item.faction !== filters.faction) return false;
+    // Multi-select filters with OR logic within each type
+    if (filters.factions.length > 0 && !filters.factions.includes(item.faction)) return false;
+    
+    if (filters.keywords.length > 0) {
+      const itemKeywords = item.keywords ? item.keywords.split(',').map(k => k.trim()) : [];
+      const hasMatchingKeyword = filters.keywords.some(filterKeyword => 
+        itemKeywords.includes(filterKeyword)
+      );
+      if (!hasMatchingKeyword) return false;
+    }
+    
+    if (filters.editions.length > 0) {
+      const itemEditions = item.edition ? item.edition.split(',').map(e => e.trim()) : [];
+      const hasMatchingEdition = filters.editions.some(filterEdition => 
+        itemEditions.includes(filterEdition)
+      );
+      if (!hasMatchingEdition) return false;
+    }
+    
+    if (filters.skus.length > 0) {
+      const itemSkus = item.sku ? item.sku.split(' / ').map(s => s.trim()) : [];
+      const hasMatchingSku = filters.skus.some(filterSku => 
+        itemSkus.includes(filterSku)
+      );
+      if (!hasMatchingSku) return false;
+    }
+    
+    // Single-select filters
     if (filters.collectionStatus && item.collection_status !== filters.collectionStatus) return false;
     if (filters.miniStatus && item.mini_status !== filters.miniStatus) return false;
-    if (filters.keyword && !item.keywords?.includes(filters.keyword)) return false;
+    
+    // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       return (
@@ -84,16 +114,41 @@ function App() {
         item.model_name?.toLowerCase().includes(searchLower)
       );
     }
+    
     return true;
   });
 
   // Get unique values for filters
-  const factions = [...new Set(collection.map(item => item.faction).filter(Boolean))];
+  const allFactions = [...new Set(collection.map(item => item.faction).filter(Boolean))].sort();
+  
   const allKeywords = collection
     .map(item => item.keywords?.split(',').map(k => k.trim()))
     .flat()
     .filter(Boolean);
-  const keywords = [...new Set(allKeywords)];
+  const uniqueKeywords = [...new Set(allKeywords)].sort();
+  
+  const allEditions = collection
+    .map(item => item.edition?.split(',').map(e => e.trim()))
+    .flat()
+    .filter(Boolean);
+  const uniqueEditions = [...new Set(allEditions)].sort();
+  
+  const allSkus = collection
+    .map(item => item.sku?.split(' / ').map(s => s.trim()))
+    .flat()
+    .filter(Boolean);
+  const uniqueSkus = [...new Set(allSkus)].sort();
+
+  const toggleFilter = (filterType, value) => {
+    setFilters(prev => {
+      const currentValues = prev[filterType];
+      if (currentValues.includes(value)) {
+        return { ...prev, [filterType]: currentValues.filter(v => v !== value) };
+      } else {
+        return { ...prev, [filterType]: [...currentValues, value] };
+      }
+    });
+  };
 
   return (
     <div className="app">
@@ -114,27 +169,65 @@ function App() {
             className="search-input"
           />
 
-          <select
-            value={filters.faction}
-            onChange={(e) => setFilters({ ...filters, faction: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Factions</option>
-            {factions.map(faction => (
-              <option key={faction} value={faction}>{faction}</option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label>Factions:</label>
+            <div className="multi-select-tags">
+              {allFactions.map(faction => (
+                <button
+                  key={faction}
+                  className={`filter-tag ${filters.factions.includes(faction) ? 'active' : ''}`}
+                  onClick={() => toggleFilter('factions', faction)}
+                >
+                  {faction}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <select
-            value={filters.keyword}
-            onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Keywords</option>
-            {keywords.map(keyword => (
-              <option key={keyword} value={keyword}>{keyword}</option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label>Keywords:</label>
+            <div className="multi-select-tags">
+              {uniqueKeywords.map(keyword => (
+                <button
+                  key={keyword}
+                  className={`filter-tag ${filters.keywords.includes(keyword) ? 'active' : ''}`}
+                  onClick={() => toggleFilter('keywords', keyword)}
+                >
+                  {keyword}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>Editions:</label>
+            <div className="multi-select-tags">
+              {uniqueEditions.map(edition => (
+                <button
+                  key={edition}
+                  className={`filter-tag ${filters.editions.includes(edition) ? 'active' : ''}`}
+                  onClick={() => toggleFilter('editions', edition)}
+                >
+                  {edition}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label>SKUs:</label>
+            <div className="multi-select-tags">
+              {uniqueSkus.map(sku => (
+                <button
+                  key={sku}
+                  className={`filter-tag ${filters.skus.includes(sku) ? 'active' : ''}`}
+                  onClick={() => toggleFilter('skus', sku)}
+                >
+                  {sku}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <select
             value={filters.collectionStatus}
@@ -163,9 +256,10 @@ function App() {
           </select>
 
           <button onClick={() => setFilters({
-            faction: '', keyword: '', collectionStatus: '', miniStatus: '', search: ''
+            factions: [], keywords: [], editions: [], skus: [],
+            collectionStatus: '', miniStatus: '', search: ''
           })} className="clear-filters">
-            Clear Filters
+            Clear All Filters
           </button>
         </div>
 

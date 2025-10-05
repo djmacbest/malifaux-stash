@@ -49,7 +49,12 @@ malifaux-stash/
   - Table view (detailed spreadsheet)
   - Grid view (card-based layout)
   - Kanban view (organized by mini status)
-- ✅ Filtering by faction, keyword, collection status, mini status
+- ✅ Multi-select filtering with smart logic:
+  - Faction, Keywords, Edition, SKU filters (OR logic within each type)
+  - Combined filters use AND logic (e.g., Guild AND Mercenary)
+  - Search filter for sculpt/model names
+  - Single-select for collection status and mini status
+- ✅ Keywords, SKU, and smart sculpt display in all views
 - ✅ Edit and delete collection entries
 - ✅ Multi-value field support (keywords, station, characteristics, SKU, edition)
 
