@@ -25,12 +25,37 @@ body {
 
 .header h1 {
   font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.header p {
-  font-size: 1.2rem;
-  opacity: 0.9;
+.main-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.main-nav button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.main-nav button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.main-nav button.active {
+  background: white;
+  color: #667eea;
+  border-color: white;
 }
 
 .container {
@@ -417,7 +442,7 @@ tr:hover {
   font-size: 1rem;
 }
 
-.kanban-card .model-name {
+.kanban-card .sculpt-name {
   color: #667eea;
   font-size: 0.875rem;
   font-weight: 600;
@@ -426,6 +451,19 @@ tr:hover {
 
 .kanban-card .faction {
   color: #6c757d;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.kanban-card .keywords-small {
+  color: #856404;
+  font-size: 0.75rem;
+  font-style: italic;
+  margin-bottom: 0.25rem;
+}
+
+.kanban-card .sku-small {
+  color: #666;
   font-size: 0.75rem;
   margin-bottom: 0.5rem;
 }
@@ -482,6 +520,127 @@ tr:hover {
 }
 
 .empty-state p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Wishlist View */
+.wishlist-view {
+  margin-top: 2rem;
+}
+
+.wishlist-view h2 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.wishlist-subtitle {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.sku-group {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sku-header {
+  color: #667eea;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #667eea;
+}
+
+.wishlist-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wishlist-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 0.9rem;
+}
+
+.wishlist-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.wishlist-table tr:hover {
+  background: #f8f9fa;
+}
+
+.unowned-row {
+  background: #fff9e6;
+}
+
+.unowned-row:hover {
+  background: #fff5d6;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.status-wishlist {
+  background: #ffc107;
+}
+
+.status-owned {
+  background: #28a745;
+}
+
+.status-unowned {
+  background: #dc3545;
+}
+
+.status-unowned {
+  color: #dc3545;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.btn-wishlist {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-wishlist:hover {
+  background: #e0a800;
+}
+
+.modal-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.modal-info p {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.modal-info p:last-child {
+  margin-bottom: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
   font-size: 1.2rem;
   color: #666;
 }

@@ -155,6 +155,71 @@ function deleteFromCollection(id, callback) {
   db.run('DELETE FROM user_collection WHERE id = ?', [id], callback);
 }
 
+// Get wishlist data - all sculpts for SKUs that have at least one wishlisted item
+function getWishlistData(callback) {
+  // First, get all SKUs that contain at least one wishlisted item
+  const wishlistSkusQuery = `
+    SELECT DISTINCT s.sku
+    FROM user_collection uc
+    JOIN sculpt_catalog s ON uc.sculpt_id = s.id
+    WHERE uc.collection_status = 'Wishlist' AND s.sku IS NOT NULL AND s.sku != ''
+  `;
+  
+  db.all(wishlistSkusQuery, [], (err, skuRows) => {
+    if (err) {
+      return callback(err);
+    }
+    
+    // Extract all individual SKUs (since sku field can contain multiple SKUs separated by ' / ')
+    const allSkus = new Set();
+    skuRows.forEach(row => {
+      if (row.sku) {
+        row.sku.split(' / ').forEach(sku => allSkus.add(sku.trim()));
+      }
+    });
+    
+    if (allSkus.size === 0) {
+      return callback(null, []);
+    }
+    
+    // Now get ALL sculpts that appear in any of these SKUs
+    const skuArray = Array.from(allSkus);
+    const placeholders = skuArray.map(() => '?').join(',');
+    
+    // Build a query that checks if any of the SKUs appear in the sculpt's sku field
+    const likeConditions = skuArray.map(() => 's.sku LIKE ?').join(' OR ');
+    const likeParams = skuArray.map(sku => `%${sku}%`);
+    
+    const allSculptsQuery = `
+      SELECT 
+        s.id as sculpt_id,
+        s.sculpt_name,
+        s.edition,
+        s.sku,
+        m.model_name,
+        m.faction,
+        m.keywords,
+        uc.id as collection_id,
+        uc.collection_status,
+        uc.mini_status,
+        uc.notes
+      FROM sculpt_catalog s
+      LEFT JOIN model_profiles m ON s.model_profile_id = m.id
+      LEFT JOIN user_collection uc ON s.id = uc.sculpt_id
+      WHERE ${likeConditions}
+      ORDER BY s.sku, 
+        CASE 
+          WHEN uc.collection_status = 'Wishlist' THEN 1
+          WHEN uc.collection_status IS NOT NULL THEN 2
+          ELSE 3
+        END,
+        s.sculpt_name
+    `;
+    
+    db.all(allSculptsQuery, likeParams, callback);
+  });
+}
+
 // Import models from CSV data
 function importModels(models, callback) {
   const stmt = db.prepare(`
@@ -284,6 +349,7 @@ module.exports = {
   addToCollection,
   updateCollectionEntry,
   deleteFromCollection,
+  getWishlistData,
   importModels,
   importSculpts
 };

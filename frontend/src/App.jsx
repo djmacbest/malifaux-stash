@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddToCollection from './components/AddToCollection';
 import CollectionView from './components/CollectionView';
+import WishlistView from './components/WishlistView';
 import './App.css';
 
 const API_URL = 'http://localhost:3001/api';
 
 function App() {
   const [collection, setCollection] = useState([]);
+  const [page, setPage] = useState('collection');
   const [view, setView] = useState('table');
   const [filters, setFilters] = useState({
     factions: [],
@@ -75,7 +77,6 @@ function App() {
 
   // Filter collection
   const filteredCollection = collection.filter(item => {
-    // Multi-select filters with OR logic within each type
     if (filters.factions.length > 0 && !filters.factions.includes(item.faction)) return false;
     
     if (filters.keywords.length > 0) {
@@ -102,11 +103,9 @@ function App() {
       if (!hasMatchingSku) return false;
     }
     
-    // Single-select filters
     if (filters.collectionStatus && item.collection_status !== filters.collectionStatus) return false;
     if (filters.miniStatus && item.mini_status !== filters.miniStatus) return false;
     
-    // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       return (
@@ -118,7 +117,6 @@ function App() {
     return true;
   });
 
-  // Get unique values for filters
   const allFactions = [...new Set(collection.map(item => item.faction).filter(Boolean))].sort();
   
   const allKeywords = collection
@@ -154,142 +152,161 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>Malifaux Stash</h1>
-        <p>My Collection</p>
+        <nav className="main-nav">
+          <button 
+            className={page === 'collection' ? 'active' : ''}
+            onClick={() => setPage('collection')}
+          >
+            My Collection
+          </button>
+          <button 
+            className={page === 'wishlist' ? 'active' : ''}
+            onClick={() => setPage('wishlist')}
+          >
+            Wishlist
+          </button>
+        </nav>
       </header>
 
       <div className="container">
-        <AddToCollection onAdd={handleAdd} />
+        {page === 'collection' ? (
+          <>
+            <AddToCollection onAdd={handleAdd} />
 
-        <div className="filters">
-          <input
-            type="text"
-            placeholder="Search collection..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="search-input"
-          />
+            <div className="filters">
+              <input
+                type="text"
+                placeholder="Search collection..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="search-input"
+              />
 
-          <div className="filter-group">
-            <label>Factions:</label>
-            <div className="multi-select-tags">
-              {allFactions.map(faction => (
-                <button
-                  key={faction}
-                  className={`filter-tag ${filters.factions.includes(faction) ? 'active' : ''}`}
-                  onClick={() => toggleFilter('factions', faction)}
-                >
-                  {faction}
-                </button>
-              ))}
+              <div className="filter-group">
+                <label>Factions:</label>
+                <div className="multi-select-tags">
+                  {allFactions.map(faction => (
+                    <button
+                      key={faction}
+                      className={`filter-tag ${filters.factions.includes(faction) ? 'active' : ''}`}
+                      onClick={() => toggleFilter('factions', faction)}
+                    >
+                      {faction}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <label>Keywords:</label>
+                <div className="multi-select-tags">
+                  {uniqueKeywords.map(keyword => (
+                    <button
+                      key={keyword}
+                      className={`filter-tag ${filters.keywords.includes(keyword) ? 'active' : ''}`}
+                      onClick={() => toggleFilter('keywords', keyword)}
+                    >
+                      {keyword}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <label>Editions:</label>
+                <div className="multi-select-tags">
+                  {uniqueEditions.map(edition => (
+                    <button
+                      key={edition}
+                      className={`filter-tag ${filters.editions.includes(edition) ? 'active' : ''}`}
+                      onClick={() => toggleFilter('editions', edition)}
+                    >
+                      {edition}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <label>SKUs:</label>
+                <div className="multi-select-tags">
+                  {uniqueSkus.map(sku => (
+                    <button
+                      key={sku}
+                      className={`filter-tag ${filters.skus.includes(sku) ? 'active' : ''}`}
+                      onClick={() => toggleFilter('skus', sku)}
+                    >
+                      {sku}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <select
+                value={filters.collectionStatus}
+                onChange={(e) => setFilters({ ...filters, collectionStatus: e.target.value })}
+                className="filter-select"
+              >
+                <option value="">All Collection Status</option>
+                <option value="Owned">Owned</option>
+                <option value="Wishlist">Wishlist</option>
+                <option value="To Sell">To Sell</option>
+                <option value="Sold">Sold</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <select
+                value={filters.miniStatus}
+                onChange={(e) => setFilters({ ...filters, miniStatus: e.target.value })}
+                className="filter-select"
+              >
+                <option value="">All Mini Status</option>
+                <option value="Unassembled">Unassembled</option>
+                <option value="Assembled">Assembled</option>
+                <option value="Primed">Primed</option>
+                <option value="Painting WIP">Painting WIP</option>
+                <option value="Painted">Painted</option>
+              </select>
+
+              <button onClick={() => setFilters({
+                factions: [], keywords: [], editions: [], skus: [],
+                collectionStatus: '', miniStatus: '', search: ''
+              })} className="clear-filters">
+                Clear All Filters
+              </button>
             </div>
-          </div>
 
-          <div className="filter-group">
-            <label>Keywords:</label>
-            <div className="multi-select-tags">
-              {uniqueKeywords.map(keyword => (
-                <button
-                  key={keyword}
-                  className={`filter-tag ${filters.keywords.includes(keyword) ? 'active' : ''}`}
-                  onClick={() => toggleFilter('keywords', keyword)}
-                >
-                  {keyword}
-                </button>
-              ))}
+            <div className="view-controls">
+              <button
+                className={view === 'table' ? 'active' : ''}
+                onClick={() => setView('table')}
+              >
+                Table View
+              </button>
+              <button
+                className={view === 'grid' ? 'active' : ''}
+                onClick={() => setView('grid')}
+              >
+                Grid View
+              </button>
+              <button
+                className={view === 'kanban' ? 'active' : ''}
+                onClick={() => setView('kanban')}
+              >
+                Kanban View
+              </button>
             </div>
-          </div>
 
-          <div className="filter-group">
-            <label>Editions:</label>
-            <div className="multi-select-tags">
-              {uniqueEditions.map(edition => (
-                <button
-                  key={edition}
-                  className={`filter-tag ${filters.editions.includes(edition) ? 'active' : ''}`}
-                  onClick={() => toggleFilter('editions', edition)}
-                >
-                  {edition}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <label>SKUs:</label>
-            <div className="multi-select-tags">
-              {uniqueSkus.map(sku => (
-                <button
-                  key={sku}
-                  className={`filter-tag ${filters.skus.includes(sku) ? 'active' : ''}`}
-                  onClick={() => toggleFilter('skus', sku)}
-                >
-                  {sku}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <select
-            value={filters.collectionStatus}
-            onChange={(e) => setFilters({ ...filters, collectionStatus: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Collection Status</option>
-            <option value="Owned">Owned</option>
-            <option value="Wishlist">Wishlist</option>
-            <option value="To Sell">To Sell</option>
-            <option value="Sold">Sold</option>
-            <option value="Other">Other</option>
-          </select>
-
-          <select
-            value={filters.miniStatus}
-            onChange={(e) => setFilters({ ...filters, miniStatus: e.target.value })}
-            className="filter-select"
-          >
-            <option value="">All Mini Status</option>
-            <option value="Unassembled">Unassembled</option>
-            <option value="Assembled">Assembled</option>
-            <option value="Primed">Primed</option>
-            <option value="Painting WIP">Painting WIP</option>
-            <option value="Painted">Painted</option>
-          </select>
-
-          <button onClick={() => setFilters({
-            factions: [], keywords: [], editions: [], skus: [],
-            collectionStatus: '', miniStatus: '', search: ''
-          })} className="clear-filters">
-            Clear All Filters
-          </button>
-        </div>
-
-        <div className="view-controls">
-          <button
-            className={view === 'table' ? 'active' : ''}
-            onClick={() => setView('table')}
-          >
-            Table View
-          </button>
-          <button
-            className={view === 'grid' ? 'active' : ''}
-            onClick={() => setView('grid')}
-          >
-            Grid View
-          </button>
-          <button
-            className={view === 'kanban' ? 'active' : ''}
-            onClick={() => setView('kanban')}
-          >
-            Kanban View
-          </button>
-        </div>
-
-        <CollectionView
-          collection={filteredCollection}
-          view={view}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
-        />
+            <CollectionView
+              collection={filteredCollection}
+              view={view}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
+          </>
+        ) : (
+          <WishlistView onAdd={handleAdd} onUpdate={handleUpdate} onDelete={handleDelete} />
+        )}
       </div>
     </div>
   );

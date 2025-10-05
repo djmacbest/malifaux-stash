@@ -5,7 +5,7 @@ I'm building "Malifaux Stash" - a community platform for Malifaux miniature coll
 
 **My skill level:** Complete beginner with only theoretical coding knowledge. I need very detailed step-by-step instructions with exact commands.
 
-**Current Status:** Phase 1 complete, starting Phase 2
+**Current Status:** Phase 1 complete, ready for Phase 2
 
 **GitHub Repository:** https://github.com/djmacbest/malifaux-stash
 
@@ -29,15 +29,19 @@ I'm building "Malifaux Stash" - a community platform for Malifaux miniature coll
 **Features Working:**
 - Typeahead search to add sculpts to collection
 - Three view modes: Table, Grid, Kanban
-- Filtering by faction, keyword, collection status, mini status
+- Multi-select filtering (Faction, Keyword, Edition, SKU) with OR logic within each type
+- Filter combinations use AND logic (e.g., Guild AND Mercenary keyword)
+- Single-select filters for collection status and mini status
+- Keywords and SKU displayed in all views
+- Smart sculpt display: Shows `[edition] sculpt_name` or just `[edition]` if sculpt name matches model name
 - Edit and delete collection entries
-- Multi-value fields (keywords, station, edition, SKU) using semicolons in CSV, converted to commas in display
+- Multi-value fields (keywords, station, edition, SKU) using semicolons in CSV
 
 **Data Format Rules:**
 - Multi-values: Use semicolon separator (e.g., `M2e;M3e;M4e`)
 - Commas in names: Wrap in quotes (e.g., `"Tara, Voidcaller"`)
 - Sculpts CSV uses model names, not IDs (backend auto-resolves)
-- Backend converts semicolons to `", "` for display
+- Backend converts semicolons to `, ` for keywords/edition, ` / ` for SKUs
 
 ## Current Phase: Phase 2 - Picture Gallery
 

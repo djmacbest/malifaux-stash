@@ -23,7 +23,9 @@ function AddToCollection({ onAdd }) {
 
       return response.data.map(sculpt => ({
         value: sculpt.id,
-        label: `[${sculpt.edition}] ${sculpt.sculpt_name} (${sculpt.model_name})`,
+        label: sculpt.sculpt_name === sculpt.model_name 
+          ? `[${sculpt.edition}] ${sculpt.model_name}`
+          : `[${sculpt.edition}] ${sculpt.sculpt_name} (${sculpt.model_name})`,
         sculpt
       }));
     } catch (error) {

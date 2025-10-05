@@ -94,6 +94,16 @@ app.delete('/api/collection/:id', (req, res) => {
   });
 });
 
+// Get wishlist data (all sculpts grouped by SKU for wishlist items)
+app.get('/api/wishlist', (req, res) => {
+  db.getWishlistData((err, data) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(data);
+  });
+});
+
 // CSV Import endpoint
 app.post('/api/import/models', express.json({ limit: '50mb' }), (req, res) => {
   const models = req.body;
