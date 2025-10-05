@@ -15,28 +15,124 @@ A community platform for Malifaux miniature collectors to manage their collectio
 - **Styling:** Custom CSS (Letterboxd-inspired design)
 - **Version Control:** Git/GitHub
 
+## AI Assistant Code Access
+
+**IMPORTANT FOR AI ASSISTANTS:** Before creating any artifacts or modifications, fetch and analyze ALL of these files first:
+
+### Project Documentation
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/README.md
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/HANDOVER_PROMPT.md
+
+### Frontend - Core Application Files
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/index.html
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/vite.config.js
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/package.json
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/eslint.config.js
+
+### Frontend - Source Files
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/main.jsx
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/App.jsx
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/App.css
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/index.css
+
+### Frontend - Components
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/AddToCollection.jsx
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/CollectionView.jsx
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/WishlistView.jsx
+
+### Backend Files
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/server.js
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/database.js
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/package.json
+
+### Data Import Tool
+- https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/import-data.html
+
+### Database Schema
+Check existing tables and structure:
+```bash
+# Connect to database
+sqlite3 backend/malifaux.db
+
+# List all tables
+.tables
+
+# Check schema for each table
+.schema model_profiles
+.schema sculpt_catalog
+.schema user_collection
+
+# Exit
+.quit
+```
+
+### AI Assistant Workflow Requirements
+
+**MANDATORY STEPS before creating any artifacts:**
+
+1. ✅ **Fetch ALL files listed above** - Read existing code completely, especially:
+   - All component files (AddToCollection, CollectionView, WishlistView)
+   - App.jsx and all CSS files
+   - Backend server.js and database.js
+   - HANDOVER_PROMPT.md for project context
+
+2. ✅ **Understand current state** - What features exist, what's the structure, what's the complete functionality
+
+3. ✅ **Ask clarifying questions** - About new requirements before coding
+
+4. ✅ **Create incremental updates** - EXTEND existing code, don't replace entire files unless explicitly rebuilding from scratch
+
+5. ✅ **Preserve ALL functionality** - Never remove existing features (like Wishlist, filters, view modes, etc.)
+
+6. ✅ **Test instructions** - Provide clear, detailed testing steps for all changes
+
+**NEVER:**
+- ❌ Create artifacts without reading existing code first
+- ❌ Replace entire files when only partial updates are needed
+- ❌ Assume previous functionality based on descriptions alone
+- ❌ Remove existing features when adding new ones
+- ❌ Guess at implementation details - always verify by reading actual code
+
+**If you cannot fetch files:**
+- Ask the user to explicitly provide the raw GitHub URLs
+- Once provided, you MUST fetch and read them before proceeding
+- If fetch still fails, ask user to paste file contents directly
+
 ## Project Structure
 
 ```
 malifaux-stash/
+├── .gitignore
+├── README.md
+├── HANDOVER_PROMPT.md      # AI assistant instructions
 ├── backend/
 │   ├── server.js           # Express API server
 │   ├── database.js         # SQLite database operations
 │   ├── malifaux.db         # SQLite database (gitignored)
-│   └── package.json
+│   ├── package.json
+│   └── package-lock.json
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AddToCollection.jsx
-│   │   │   └── CollectionView.jsx
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   └── main.jsx
-│   └── package.json
-├── import-data.html        # CSV import tool
-├── models_template.csv     # Template for model data
-├── sculpts_template.csv    # Template for sculpt data
-└── .gitignore
+│   ├── .gitignore
+│   ├── README.md
+│   ├── index.html
+│   ├── vite.config.js
+│   ├── eslint.config.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── public/
+│   │   └── vite.svg
+│   └── src/
+│       ├── main.jsx        # React entry point
+│       ├── App.jsx         # Main app component with routing
+│       ├── App.css         # Main app styles
+│       ├── index.css       # Global styles
+│       ├── assets/
+│       │   └── react.svg
+│       └── components/
+│           ├── AddToCollection.jsx    # Typeahead search & add
+│           ├── CollectionView.jsx     # Table/Grid/Kanban views
+│           └── WishlistView.jsx       # Wishlist management
+└── import-data.html        # CSV import tool
 ```
 
 ## Phase 1: Collection Management (COMPLETE)
@@ -45,10 +141,11 @@ malifaux-stash/
 - ✅ Master data management (Model Profiles + Sculpt Catalog)
 - ✅ CSV import tool for bulk data import
 - ✅ Typeahead search to add sculpts to collection
-- ✅ "My Collection" with three view modes:
+- ✅ **"My Collection" tab** with three view modes:
   - Table view (detailed spreadsheet)
   - Grid view (card-based layout)
   - Kanban view (organized by mini status)
+- ✅ **"Wishlist" tab** with dedicated wishlist management
 - ✅ Multi-select filtering with smart logic:
   - Faction, Keywords, Edition, SKU filters (OR logic within each type)
   - Combined filters use AND logic (e.g., Guild AND Mercenary)
@@ -98,6 +195,7 @@ malifaux-stash/
 - Node.js (v20+)
 - npm
 - Git
+- SQLite3 (for database management)
 
 ### Setup
 
@@ -155,6 +253,7 @@ malifaux-stash/
 - Collection tracking with typeahead search
 - Multiple view modes and filtering
 - CSV data import
+- Wishlist management
 
 ### 🚧 Phase 2: Picture Gallery (IN PROGRESS)
 - Upload painted mini pictures
