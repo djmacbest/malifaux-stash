@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function CollectionView({ collection, view, onUpdate, onDelete }) {
   const [editingId, setEditingId] = useState(null);
@@ -106,7 +107,11 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
                   </>
                 ) : (
                   <>
-                    <td>{item.model_name}</td>
+                    <td>
+                      <Link to={`/collection/${item.id}`} className="model-link">
+                        {item.model_name}
+                      </Link>
+                    </td>
                     <td>{formatSculptDisplay(item)}</td>
                     <td>{item.faction}</td>
                     <td>{item.keywords}</td>
@@ -134,10 +139,12 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
       <div className="grid-view">
         {collection.map(item => (
           <div key={item.id} className="grid-card">
-            <h3>{item.model_name}</h3>
-            <p className="sculpt-name">{formatSculptDisplay(item)}</p>
-            <p className="faction">{item.faction}</p>
-            {item.keywords && <p className="keywords">{item.keywords}</p>}
+            <Link to={`/collection/${item.id}`} className="card-link">
+              <h3>{item.model_name}</h3>
+              <p className="sculpt-name">{formatSculptDisplay(item)}</p>
+              <p className="faction">{item.faction}</p>
+              {item.keywords && <p className="keywords">{item.keywords}</p>}
+            </Link>
             <div className="card-details">
               {item.sku && (
                 <div className="detail-row">
@@ -230,11 +237,13 @@ function CollectionView({ collection, view, onUpdate, onDelete }) {
                 .filter(item => item.mini_status === status)
                 .map(item => (
                   <div key={item.id} className="kanban-card">
-                    <h4>{item.model_name}</h4>
-                    <p className="sculpt-name">{formatSculptDisplay(item)}</p>
-                    <p className="faction">{item.faction}</p>
-                    {item.keywords && <p className="keywords-small">{item.keywords}</p>}
-                    {item.sku && <p className="sku-small">{item.sku}</p>}
+                    <Link to={`/collection/${item.id}`} className="card-link">
+                      <h4>{item.model_name}</h4>
+                      <p className="sculpt-name">{formatSculptDisplay(item)}</p>
+                      <p className="faction">{item.faction}</p>
+                      {item.keywords && <p className="keywords-small">{item.keywords}</p>}
+                      {item.sku && <p className="sku-small">{item.sku}</p>}
+                    </Link>
                     <span className="status-badge">{item.collection_status}</span>
                     {item.notes && <p className="notes">{item.notes}</p>}
                     <div className="card-actions">

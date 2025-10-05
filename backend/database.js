@@ -67,6 +67,8 @@ function initialize() {
   });
 }
 
+// ==================== PHASE 1 FUNCTIONS ====================
+
 // Get all model profiles
 function getAllModels(callback) {
   db.all('SELECT * FROM model_profiles ORDER BY model_name', [], callback);
@@ -140,14 +142,27 @@ function addToCollection(sculptId, collectionStatus, miniStatus, notes, callback
   });
 }
 
-// Update collection entry
-function updateCollectionEntry(id, collectionStatus, miniStatus, notes, callback) {
-  const sql = `
-    UPDATE user_collection
-    SET collection_status = ?, mini_status = ?, notes = ?
-    WHERE id = ?
-  `;
-  db.run(sql, [collectionStatus, miniStatus, notes, id], callback);
+// Update collection entry - UPDATED FOR PHASE 2 (upload_ids support)
+function updateCollectionEntry(id, collectionStatus, miniStatus, notes, upload_ids, callback) {
+  // Handle both Phase 1 (4 params) and Phase 2 (5 params) calls
+  if (typeof upload_ids === 'function') {
+    // Phase 1 call: upload_ids is actually the callback
+    callback = upload_ids;
+    const sql = `
+      UPDATE user_collection
+      SET collection_status = ?, mini_status = ?, notes = ?
+      WHERE id = ?
+    `;
+    db.run(sql, [collectionStatus, miniStatus, notes, id], callback);
+  } else {
+    // Phase 2 call: includes upload_ids
+    const sql = `
+      UPDATE user_collection
+      SET collection_status = ?, mini_status = ?, notes = ?, upload_ids = ?
+      WHERE id = ?
+    `;
+    db.run(sql, [collectionStatus, miniStatus, notes, upload_ids || '', id], callback);
+  }
 }
 
 // Delete from collection
@@ -184,7 +199,6 @@ function getWishlistData(callback) {
     
     // Now get ALL sculpts that appear in any of these SKUs
     const skuArray = Array.from(allSkus);
-    const placeholders = skuArray.map(() => '?').join(',');
     
     // Build a query that checks if any of the SKUs appear in the sculpt's sku field
     const likeConditions = skuArray.map(() => 's.sku LIKE ?').join(' OR ');
@@ -340,6 +354,89 @@ function importSculpts(sculpts, callback) {
   }
 }
 
+// ==================== PHASE 2 FUNCTIONS (NEW) ====================
+
+// Get single collection entry with details
+function getCollectionEntry(id, callback) {
+  const sql = `
+    SELECT c.*, s.sculpt_name, s.edition, s.sku,
+           m.model_name, m.faction, m.keywords, m.characteristics
+    FROM user_collection c
+    LEFT JOIN sculpt_catalog s ON c.sculpt_id = s.id
+    LEFT JOIN model_profiles m ON s.model_profile_id = m.id
+    WHERE c.id = ?
+  `;
+  db.get(sql, [id], callback);
+}
+
+// Add new upload to database
+function addUpload(filename, originalFilename, caption, sculptIds, sceneTag, statusTag, callback) {
+  const sql = `
+    INSERT INTO uploads (filename, original_filename, caption, sculpt_ids, scene_tag, status_tag)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  db.run(sql, [filename, originalFilename, caption, sculptIds, sceneTag, statusTag], function(err) {
+    callback(err, this ? this.lastID : null);
+  });
+}
+
+// Get all uploads
+function getAllUploads(callback) {
+  const sql = 'SELECT * FROM uploads ORDER BY upload_date DESC';
+  db.all(sql, [], callback);
+}
+
+// Get single upload
+function getUpload(id, callback) {
+  const sql = 'SELECT * FROM uploads WHERE id = ?';
+  db.get(sql, [id], callback);
+}
+
+// Update upload
+function updateUpload(id, caption, sculptIds, sceneTag, statusTag, callback) {
+  const sql = `
+    UPDATE uploads 
+    SET caption = ?, sculpt_ids = ?, scene_tag = ?, status_tag = ?
+    WHERE id = ?
+  `;
+  db.run(sql, [caption, sculptIds, sceneTag, statusTag, id], callback);
+}
+
+// Delete upload
+function deleteUpload(id, callback) {
+  // First, remove upload_id from any collection entries
+  db.all('SELECT id, upload_ids FROM user_collection WHERE upload_ids LIKE ?', [`%${id}%`], (err, rows) => {
+    if (!err && rows) {
+      rows.forEach(row => {
+        const uploadIds = row.upload_ids.split(';')
+          .filter(uid => uid && uid !== id.toString());
+        const newUploadIds = uploadIds.join(';');
+        db.run('UPDATE user_collection SET upload_ids = ? WHERE id = ?', [newUploadIds, row.id]);
+      });
+    }
+    
+    // Then delete the upload record
+    db.run('DELETE FROM uploads WHERE id = ?', [id], callback);
+  });
+}
+
+// Add upload to collection entry
+function addUploadToCollection(collectionId, uploadId, callback) {
+  db.get('SELECT upload_ids FROM user_collection WHERE id = ?', [collectionId], (err, row) => {
+    if (err || !row) {
+      return callback(err || new Error('Collection entry not found'));
+    }
+    
+    const currentIds = row.upload_ids ? row.upload_ids.split(';').filter(id => id) : [];
+    if (!currentIds.includes(uploadId.toString())) {
+      currentIds.push(uploadId.toString());
+    }
+    const newUploadIds = currentIds.join(';');
+    
+    db.run('UPDATE user_collection SET upload_ids = ? WHERE id = ?', [newUploadIds, collectionId], callback);
+  });
+}
+
 module.exports = {
   initialize,
   getAllModels,
@@ -351,5 +448,13 @@ module.exports = {
   deleteFromCollection,
   getWishlistData,
   importModels,
-  importSculpts
+  importSculpts,
+  // Phase 2 exports
+  getCollectionEntry,
+  addUpload,
+  getAllUploads,
+  getUpload,
+  updateUpload,
+  deleteUpload,
+  addUploadToCollection
 };

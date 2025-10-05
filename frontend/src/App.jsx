@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import AddToCollection from './components/AddToCollection';
 import CollectionView from './components/CollectionView';
 import WishlistView from './components/WishlistView';
+import Gallery from './components/Gallery';
+import UploadDetail from './components/UploadDetail';
+import CollectionEntryDetail from './components/CollectionEntryDetail';
 import './App.css';
 
 const API_URL = 'http://localhost:3001/api';
 
 function App() {
   const [collection, setCollection] = useState([]);
-  const [page, setPage] = useState('collection');
+  const [sculpts, setSculpts] = useState([]);
   const [view, setView] = useState('table');
   const [filters, setFilters] = useState({
     factions: [],
@@ -22,15 +26,19 @@ function App() {
   });
 
   useEffect(() => {
-    loadCollection();
+    loadData();
   }, []);
 
-  const loadCollection = async () => {
+  const loadData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/collection`);
-      setCollection(response.data);
+      const [collectionRes, sculptsRes] = await Promise.all([
+        axios.get(`${API_URL}/collection`),
+        axios.get(`${API_URL}/sculpts`)
+      ]);
+      setCollection(collectionRes.data);
+      setSculpts(sculptsRes.data);
     } catch (error) {
-      console.error('Error loading collection:', error);
+      console.error('Error loading data:', error);
     }
   };
 
@@ -42,7 +50,7 @@ function App() {
         miniStatus,
         notes
       });
-      loadCollection();
+      loadData();
     } catch (error) {
       console.error('Error adding to collection:', error);
       alert('Error adding to collection');
@@ -56,7 +64,7 @@ function App() {
         miniStatus,
         notes
       });
-      loadCollection();
+      loadData();
     } catch (error) {
       console.error('Error updating collection:', error);
       alert('Error updating collection');
@@ -68,7 +76,7 @@ function App() {
     
     try {
       await axios.delete(`${API_URL}/collection/${id}`);
-      loadCollection();
+      loadData();
     } catch (error) {
       console.error('Error deleting from collection:', error);
       alert('Error removing from collection');
@@ -149,166 +157,219 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>Malifaux Stash</h1>
-        <nav className="main-nav">
-          <button 
-            className={page === 'collection' ? 'active' : ''}
-            onClick={() => setPage('collection')}
-          >
-            My Collection
-          </button>
-          <button 
-            className={page === 'wishlist' ? 'active' : ''}
-            onClick={() => setPage('wishlist')}
-          >
-            Wishlist
-          </button>
-        </nav>
-      </header>
-
-      <div className="container">
-        {page === 'collection' ? (
-          <>
-            <AddToCollection onAdd={handleAdd} />
-
-            <div className="filters">
-              <input
-                type="text"
-                placeholder="Search collection..."
-                value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="search-input"
-              />
-
-              <div className="filter-group">
-                <label>Factions:</label>
-                <div className="multi-select-tags">
-                  {allFactions.map(faction => (
-                    <button
-                      key={faction}
-                      className={`filter-tag ${filters.factions.includes(faction) ? 'active' : ''}`}
-                      onClick={() => toggleFilter('factions', faction)}
-                    >
-                      {faction}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label>Keywords:</label>
-                <div className="multi-select-tags">
-                  {uniqueKeywords.map(keyword => (
-                    <button
-                      key={keyword}
-                      className={`filter-tag ${filters.keywords.includes(keyword) ? 'active' : ''}`}
-                      onClick={() => toggleFilter('keywords', keyword)}
-                    >
-                      {keyword}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label>Editions:</label>
-                <div className="multi-select-tags">
-                  {uniqueEditions.map(edition => (
-                    <button
-                      key={edition}
-                      className={`filter-tag ${filters.editions.includes(edition) ? 'active' : ''}`}
-                      onClick={() => toggleFilter('editions', edition)}
-                    >
-                      {edition}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label>SKUs:</label>
-                <div className="multi-select-tags">
-                  {uniqueSkus.map(sku => (
-                    <button
-                      key={sku}
-                      className={`filter-tag ${filters.skus.includes(sku) ? 'active' : ''}`}
-                      onClick={() => toggleFilter('skus', sku)}
-                    >
-                      {sku}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <select
-                value={filters.collectionStatus}
-                onChange={(e) => setFilters({ ...filters, collectionStatus: e.target.value })}
-                className="filter-select"
-              >
-                <option value="">All Collection Status</option>
-                <option value="Owned">Owned</option>
-                <option value="Wishlist">Wishlist</option>
-                <option value="To Sell">To Sell</option>
-                <option value="Sold">Sold</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <select
-                value={filters.miniStatus}
-                onChange={(e) => setFilters({ ...filters, miniStatus: e.target.value })}
-                className="filter-select"
-              >
-                <option value="">All Mini Status</option>
-                <option value="Unassembled">Unassembled</option>
-                <option value="Assembled">Assembled</option>
-                <option value="Primed">Primed</option>
-                <option value="Painting WIP">Painting WIP</option>
-                <option value="Painted">Painted</option>
-              </select>
-
-              <button onClick={() => setFilters({
-                factions: [], keywords: [], editions: [], skus: [],
-                collectionStatus: '', miniStatus: '', search: ''
-              })} className="clear-filters">
-                Clear All Filters
+    <Router>
+      <div className="app">
+        <header className="header">
+          <h1>Malifaux Stash</h1>
+          <nav className="main-nav">
+            <Link to="/gallery">
+              <button className={window.location.pathname.startsWith('/gallery') ? 'active' : ''}>
+                Gallery
               </button>
-            </div>
+            </Link>
+            <Link to="/collection">
+              <button className={window.location.pathname === '/collection' ? 'active' : ''}>
+                My Collection
+              </button>
+            </Link>
+            <Link to="/wishlist">
+              <button className={window.location.pathname === '/wishlist' ? 'active' : ''}>
+                Wishlist
+              </button>
+            </Link>
+          </nav>
+        </header>
 
-            <div className="view-controls">
-              <button
-                className={view === 'table' ? 'active' : ''}
-                onClick={() => setView('table')}
-              >
-                Table View
-              </button>
-              <button
-                className={view === 'grid' ? 'active' : ''}
-                onClick={() => setView('grid')}
-              >
-                Grid View
-              </button>
-              <button
-                className={view === 'kanban' ? 'active' : ''}
-                onClick={() => setView('kanban')}
-              >
-                Kanban View
-              </button>
-            </div>
-
-            <CollectionView
-              collection={filteredCollection}
-              view={view}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
+        <div className="container">
+          <Routes>
+            {/* Gallery is homepage */}
+            <Route path="/" element={<Navigate to="/gallery" replace />} />
+            
+            <Route 
+              path="/gallery" 
+              element={
+                <Gallery 
+                  allSculpts={sculpts}
+                  userCollection={collection}
+                  onDataChange={loadData}
+                />
+              } 
             />
-          </>
-        ) : (
-          <WishlistView onAdd={handleAdd} onUpdate={handleUpdate} onDelete={handleDelete} />
-        )}
+            
+            <Route 
+              path="/gallery/:id" 
+              element={
+                <UploadDetail 
+                  allSculpts={sculpts}
+                />
+              } 
+            />
+
+            <Route 
+              path="/collection" 
+              element={
+                <>
+                  <AddToCollection onAdd={handleAdd} />
+
+                  <div className="filters">
+                    <input
+                      type="text"
+                      placeholder="Search collection..."
+                      value={filters.search}
+                      onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                      className="search-input"
+                    />
+
+                    <div className="filter-group">
+                      <label>Factions:</label>
+                      <div className="multi-select-tags">
+                        {allFactions.map(faction => (
+                          <button
+                            key={faction}
+                            className={`filter-tag ${filters.factions.includes(faction) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('factions', faction)}
+                          >
+                            {faction}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-group">
+                      <label>Keywords:</label>
+                      <div className="multi-select-tags">
+                        {uniqueKeywords.map(keyword => (
+                          <button
+                            key={keyword}
+                            className={`filter-tag ${filters.keywords.includes(keyword) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('keywords', keyword)}
+                          >
+                            {keyword}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-group">
+                      <label>Editions:</label>
+                      <div className="multi-select-tags">
+                        {uniqueEditions.map(edition => (
+                          <button
+                            key={edition}
+                            className={`filter-tag ${filters.editions.includes(edition) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('editions', edition)}
+                          >
+                            {edition}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="filter-group">
+                      <label>SKUs:</label>
+                      <div className="multi-select-tags">
+                        {uniqueSkus.map(sku => (
+                          <button
+                            key={sku}
+                            className={`filter-tag ${filters.skus.includes(sku) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('skus', sku)}
+                          >
+                            {sku}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <select
+                      value={filters.collectionStatus}
+                      onChange={(e) => setFilters({ ...filters, collectionStatus: e.target.value })}
+                      className="filter-select"
+                    >
+                      <option value="">All Collection Status</option>
+                      <option value="Owned">Owned</option>
+                      <option value="Wishlist">Wishlist</option>
+                      <option value="To Sell">To Sell</option>
+                      <option value="Sold">Sold</option>
+                      <option value="Other">Other</option>
+                    </select>
+
+                    <select
+                      value={filters.miniStatus}
+                      onChange={(e) => setFilters({ ...filters, miniStatus: e.target.value })}
+                      className="filter-select"
+                    >
+                      <option value="">All Mini Status</option>
+                      <option value="Unassembled">Unassembled</option>
+                      <option value="Assembled">Assembled</option>
+                      <option value="Primed">Primed</option>
+                      <option value="Painting WIP">Painting WIP</option>
+                      <option value="Painted">Painted</option>
+                    </select>
+
+                    <button onClick={() => setFilters({
+                      factions: [], keywords: [], editions: [], skus: [],
+                      collectionStatus: '', miniStatus: '', search: ''
+                    })} className="clear-filters">
+                      Clear All Filters
+                    </button>
+                  </div>
+
+                  <div className="view-controls">
+                    <button
+                      className={view === 'table' ? 'active' : ''}
+                      onClick={() => setView('table')}
+                    >
+                      Table View
+                    </button>
+                    <button
+                      className={view === 'grid' ? 'active' : ''}
+                      onClick={() => setView('grid')}
+                    >
+                      Grid View
+                    </button>
+                    <button
+                      className={view === 'kanban' ? 'active' : ''}
+                      onClick={() => setView('kanban')}
+                    >
+                      Kanban View
+                    </button>
+                  </div>
+
+                  <CollectionView
+                    collection={filteredCollection}
+                    view={view}
+                    onUpdate={handleUpdate}
+                    onDelete={handleDelete}
+                  />
+                </>
+              } 
+            />
+
+            <Route 
+              path="/collection/:id" 
+              element={
+                <CollectionEntryDetail 
+                  allSculpts={sculpts}
+                  userCollection={collection}
+                  onDataChange={loadData}
+                />
+              } 
+            />
+
+            <Route 
+              path="/wishlist" 
+              element={
+                <WishlistView 
+                  onAdd={handleAdd} 
+                  onUpdate={handleUpdate} 
+                  onDelete={handleDelete} 
+                />
+              } 
+            />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 }
 

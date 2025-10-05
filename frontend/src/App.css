@@ -35,6 +35,10 @@ body {
   margin-top: 1rem;
 }
 
+.main-nav a {
+  text-decoration: none;
+}
+
 .main-nav button {
   background: rgba(255, 255, 255, 0.2);
   color: white;
@@ -325,6 +329,30 @@ tr:hover {
   font-weight: 500;
 }
 
+/* Collection View Links - Phase 2 */
+.model-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.model-link:hover {
+  color: #5568d3;
+  text-decoration: underline;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card-link:hover h3,
+.card-link:hover h4 {
+  color: #667eea;
+}
+
 /* Grid View */
 .grid-view {
   display: grid;
@@ -349,6 +377,7 @@ tr:hover {
   color: #333;
   margin-bottom: 0.5rem;
   font-size: 1.25rem;
+  transition: color 0.2s;
 }
 
 .grid-card .sculpt-name {
@@ -374,10 +403,6 @@ tr:hover {
 .sku-text {
   font-size: 0.875rem;
   color: #666;
-}grid-card .faction {
-  color: #6c757d;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
 }
 
 .card-details {
@@ -440,6 +465,7 @@ tr:hover {
   color: #333;
   margin-bottom: 0.5rem;
   font-size: 1rem;
+  transition: color 0.2s;
 }
 
 .kanban-card .sculpt-name {

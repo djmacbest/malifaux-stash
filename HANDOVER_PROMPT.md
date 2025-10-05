@@ -5,172 +5,282 @@ I'm building "Malifaux Stash" - a community platform for Malifaux miniature coll
 
 **My skill level:** Complete beginner with only theoretical coding knowledge. I need very detailed step-by-step instructions with exact commands.
 
-**Current Status:** Phase 1 complete, ready for Phase 2
+**Current Status:** Phase 2 in progress (core features implemented, needs polish)
 
 **GitHub Repository:** https://github.com/djmacbest/malifaux-stash
 
-**Important:** Read the README.md in the GitHub repo for full technical details, data structure, and setup instructions.
+---
 
-## Tech Stack (Already Set Up)
-- **Frontend:** React (Vite), React-Select
-- **Backend:** Node.js, Express  
-- **Database:** SQLite (file: `backend/malifaux.db`)
-- **Styling:** Custom CSS
+## 🚨 CRITICAL WORKFLOW RULES - READ FIRST 🚨
+
+### MANDATORY: Code Fetching Protocol
+
+**BEFORE creating ANY artifacts or code changes, you MUST:**
+
+1. ✅ **Fetch ALL relevant existing files from GitHub**
+   - Use the file URLs listed in README.md "AI Assistant Code Access" section
+   - Read EVERY file that might be affected by your changes
+   - DO NOT guess at implementation details - always verify
+
+2. ✅ **Confirm what you fetched**
+   - Explicitly state which files you've read
+   - Show key details proving you understand the current state
+   - Ask clarifying questions AFTER reading the code
+
+3. ✅ **Create COMPLETE replacement artifacts**
+   - NEVER ask the user to "add these lines" or "append this code"
+   - ALWAYS provide full file contents as artifacts
+   - One complete artifact per file
+
+4. ✅ **Verify before proceeding**
+   - Confirm your understanding of current implementation
+   - Get user approval before generating artifacts
+   - Test incrementally, one feature at a time
+
+### FORBIDDEN Practices
+
+❌ **NEVER** create artifacts without fetching existing code first  
+❌ **NEVER** ask user to manually edit files line-by-line  
+❌ **NEVER** assume previous functionality based on descriptions alone  
+❌ **NEVER** remove existing features when adding new ones  
+❌ **NEVER** use localStorage or sessionStorage (not supported)  
+❌ **NEVER** create partial/incomplete artifacts with TODOs  
+
+---
+
+## Tech Stack
+
+- **Frontend:** React (Vite), React-Select, React-Router-Dom, React-Masonry-CSS, Axios
+- **Backend:** Node.js, Express, Multer (file uploads), Sharp (image processing)
+- **Database:** SQLite (`backend/malifaux.db`)
+- **Styling:** Custom CSS (purple gradient theme: #667eea to #764ba2)
 - **OS:** Windows
 - **Editor:** VS Code
 
-## Phase 1 Accomplishments ✅
+---
 
-**Master Data:**
-- 103 Model Profiles imported
-- 270 Sculpts imported
-- CSV import tool working (`import-data.html`)
+## Current Phase Status
 
-**Features Working:**
-- Typeahead search to add sculpts to collection
-- Three view modes: Table, Grid, Kanban
-- Multi-select filtering (Faction, Keyword, Edition, SKU) with OR logic within each type
-- Filter combinations use AND logic (e.g., Guild AND Mercenary keyword)
-- Single-select filters for collection status and mini status
-- Keywords and SKU displayed in all views
-- Smart sculpt display: Shows `[edition] sculpt_name` or just `[edition]` if sculpt name matches model name
+### ✅ Phase 1: Collection Management (COMPLETE)
+- Master data (Model Profiles + Sculpt Catalog)
+- CSV import tool
+- Typeahead search to add sculpts
+- "My Collection" tab with Table/Grid/Kanban views
+- "Wishlist" tab with SKU grouping
+- Multi-select filtering (Faction, Keyword, Edition, SKU)
 - Edit and delete collection entries
-- Multi-value fields (keywords, station, edition, SKU) using semicolons in CSV
 
-**Data Format Rules:**
-- Multi-values: Use semicolon separator (e.g., `M2e;M3e;M4e`)
-- Commas in names: Wrap in quotes (e.g., `"Tara, Voidcaller"`)
-- Sculpts CSV uses model names, not IDs (backend auto-resolves)
-- Backend converts semicolons to `, ` for keywords/edition, ` / ` for SKUs
+### 🚧 Phase 2: Picture Gallery (IN PROGRESS - Core Complete, Needs Polish)
 
-## Current Phase: Phase 2 - Picture Gallery
+**Implemented:**
+- ✅ Gallery tab (homepage) with masonry/list views
+- ✅ Upload modal (accessible from Gallery + Collection entries)
+- ✅ Image processing (WebP conversion, 2000px max, thumbnails)
+- ✅ Multi-sculpt tagging with typeahead
+- ✅ Scene tags (Individual Mini, Collage, Crew Picture, Battle Snapshot)
+- ✅ Status tags (Fully Painted, WIP)
+- ✅ Collection linking (uploads linked to collection entries)
+- ✅ Individual upload detail pages (shareable URLs: `/gallery/:id`)
+- ✅ Collection entry detail pages (show photos, `/collection/:id`)
+- ✅ Hashtag support in captions
+- ✅ Full CRUD operations on uploads
+- ✅ Gallery filtering (faction, keyword, edition, SKU, scene, status)
+- ✅ Automatic "add to collection" prompt for unowned sculpts
 
-**Goal:** Add ability to upload and tag painted miniature pictures (single-user, no auth yet)
+**Needs Polish (Next Tasks):**
+- UI/UX improvements
+- Additional filtering options
+- Performance optimization
+- Bug fixes as discovered
 
-**Features Needed:**
-1. Upload picture interface
-2. Tag pictures with sculpts (typeahead multi-select from Sculpt Catalog)
-3. Optional: Link picture to a collection entry
-4. Gallery view of uploaded pictures
-5. Filter gallery by tagged sculpts/models/keywords/factions
-6. View full image details (image, tags, caption)
-7. Edit tags/caption
-8. Delete uploads
+### 📋 Phase 3: Discovery (PLANNED)
+- Public discovery feed
+- Browse other users' uploads
+- Advanced search and filtering
 
-**Database additions needed:**
-- User Uploads table (image path, tagged sculpts, scene tag, status tag, caption, timestamp)
-- File storage in `backend/uploads/` folder
+### 📋 Phase 4: Multi-User + Social (PLANNED)
+- User authentication
+- Likes and comments
+- User profiles
+- PostgreSQL migration
+- Production deployment
 
-**Important constraints:**
-- Images stored in local file system for now (cloud storage in Phase 4)
-- No authentication yet (single user)
-- Must handle multiple sculpts tagged per image
+---
 
-## Critical Instructions for AI Assistant
+## Database Schema
 
-### Communication Style
-- **Always use artifacts for ALL code** - never paste code in chat
-- Be concise but thorough - focus on technical content
-- Provide exact commands with explanations
-- Assume I need hand-holding through each step
-- **Before generating substantial code, ask clarifying questions**
-- After clarifying, immediately create code artifacts
+### Tables
+- **model_profiles** - Master data for models
+- **sculpt_catalog** - Master data for sculpts
+- **user_collection** - User's owned/wishlisted items (includes `upload_ids` column)
+- **uploads** - User's uploaded pictures
 
-### Code Requirements
-- **Never use localStorage or sessionStorage** (not supported in Claude artifacts)
-- No placeholder/TODO sections - provide complete working code
-- Include error handling from the start
-- Use React state for all data storage in artifacts
+### Key Relationships
+- Collection entries link to sculpts via `sculpt_id`
+- Uploads link to sculpts via `sculpt_ids` (semicolon-separated)
+- Collection entries link to uploads via `upload_ids` (semicolon-separated)
 
-### When Creating Artifacts
-- Create separate artifacts for each file
-- Include file path in artifact title (e.g., "backend/routes.js")
-- Show complete file contents, not just changes
-- Explain what each part does for beginners
+---
 
-### Data Rules
-- **Never create fictional Malifaux data** - provide empty templates only
-- Multi-value fields use semicolons in CSV (backend converts to commas)
-- Show exact CSV format needed for any new data structures
+## File Access URLs
 
-### Testing & Verification
-- After each major change, provide testing instructions
-- Include troubleshooting steps for common errors
-- Show how to verify changes worked (which URL to check, what to look for)
+**ALL files are listed in README.md under "AI Assistant Code Access"**
 
-## Project File Structure
+Before making changes, fetch these URLs:
 
+### Frontend Core
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/App.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/App.css`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/index.css`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/package.json`
+
+### Frontend Components
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/AddToCollection.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/CollectionView.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/WishlistView.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/Gallery.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/UploadModal.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/UploadDetail.jsx`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/frontend/src/components/CollectionEntryDetail.jsx`
+
+### Backend
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/server.js`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/database.js`
+- `https://raw.githubusercontent.com/djmacbest/malifaux-stash/main/backend/package.json`
+
+---
+
+## Development Workflow
+
+### Starting a New Task
+
+1. **User provides clear requirements**
+2. **AI fetches ALL relevant code** (see URLs above)
+3. **AI confirms understanding** of current state
+4. **AI asks clarifying questions** about new requirements
+5. **User approves approach**
+6. **AI creates complete replacement artifacts**
+7. **User tests incrementally**
+
+### Git Workflow
+
+Before major changes:
+```bash
+git checkout -b feature-name
 ```
-malifaux-stash/
-├── backend/
-│   ├── server.js           # Express API server
-│   ├── database.js         # SQLite operations
-│   ├── malifaux.db         # SQLite database
-│   ├── uploads/            # Image storage (create in Phase 2)
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AddToCollection.jsx
-│   │   │   └── CollectionView.jsx
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   └── main.jsx
-│   └── package.json
-├── import-data.html
-└── README.md
+
+After testing:
+```bash
+git add .
+git commit -m "Descriptive message"
+git push origin feature-name
 ```
+
+---
 
 ## Running the Application
 
-Backend (Terminal 1):
+**Terminal 1 - Backend:**
 ```bash
 cd backend
 npm run dev
 ```
 Runs on `http://localhost:3001`
 
-Frontend (Terminal 2):
+**Terminal 2 - Frontend:**
 ```bash
 cd frontend
 npm run dev
 ```
 Runs on `http://localhost:5173`
 
-## What I Need Help With
+---
 
-**Current task:** Implement Phase 2 - Picture Gallery
+## Data Format Rules
 
-Please:
-1. Ask any clarifying questions about Phase 2 requirements
-2. Provide step-by-step implementation plan
-3. Create all necessary code in artifacts
-4. Show me how to test each feature
-5. Help me commit to GitHub when phase is complete
+### Multi-Value Fields
+- **Input (CSV):** Use semicolon separator
+  - Example: `M2e;M3e;M4e`
+- **Storage (DB):** Semicolon-separated strings
+- **Display (Frontend):** Backend converts to `, ` (keywords/edition) or ` / ` (SKUs)
 
-**Communication preferences:**
-- Be direct but beginner-friendly
-- Provide exact commands I should run
-- Explain what each command does
-- Include troubleshooting steps preemptively
-- Use artifacts for ALL code (never paste in chat)
+### Names with Commas
+- **CSV:** Wrap in double quotes
+  - Example: `"Tara, Voidcaller"`
 
-## Reference Documents
-
-- **Full project details:** See README.md in GitHub repo
-- **Original requirements:** See project document in repo (if added)
-- **Data structure:** Documented in README.md
-- **CSV format rules:** Documented in README.md
-
-## Important Notes
-
-- I have ~300 sculpts in sample data, expect ~3000 in full dataset
-- Some model names contain commas (e.g., "Tara, Voidcaller")
-- Edition, keywords, station, characteristics, and SKU are multi-value fields
-- Backend already handles semicolon-to-comma conversion for display
-- TypeScript is not used (plain JavaScript)
-- No authentication until Phase 4
+### Sculpt References
+- **CSV:** Use model names, not IDs
+  - Example: `Ronin` (not `5`)
+- **Backend:** Auto-resolves to IDs
 
 ---
 
-**Ready to continue!** I'm at the start of Phase 2. Please ask clarifying questions about the picture gallery requirements before we begin implementation.
+## Communication Preferences
+
+- **Be direct but beginner-friendly**
+- **Provide exact commands** with explanations
+- **Use artifacts for ALL code** (never paste in chat)
+- **Test incrementally** - one feature at a time
+- **Include troubleshooting steps** preemptively
+- **Assume zero prior context** - always verify current state
+
+---
+
+## Common Issues & Solutions
+
+### "I forgot to fetch existing code"
+**STOP.** Fetch all relevant files first, then restart.
+
+### "Should I append these lines?"
+**NO.** Create complete replacement artifact instead.
+
+### "The user's code might look like X"
+**DON'T GUESS.** Fetch the actual file and verify.
+
+### "This file is too long for one artifact"
+**Plan ahead.** Break into logical chunks or prioritize essential changes.
+
+---
+
+## Example Correct Workflow
+
+```
+User: "Add a delete button to the gallery"
+
+AI: "I'll help with that. Let me first fetch the current Gallery.jsx 
+to see the existing implementation."
+
+[Fetches Gallery.jsx]
+
+AI: "I can see the gallery currently has [describes current state]. 
+To add a delete button, I need to:
+1. Add delete handler
+2. Add button to UI
+3. Update API call
+
+Should I proceed with creating the updated Gallery.jsx artifact?"
+
+User: "Yes"
+
+AI: [Creates COMPLETE Gallery.jsx artifact with all changes]
+```
+
+---
+
+## Example INCORRECT Workflow ❌
+
+```
+User: "Add a delete button to the gallery"
+
+AI: "Sure! Add this code to your Gallery.jsx file:
+```javascript
+const handleDelete = () => { ... }
+```
+Then add this button..."
+
+[WRONG - Should fetch file first, create complete artifact]
+```
+
+---
+
+**Ready to help!** Remember: FETCH → CONFIRM → CREATE COMPLETE ARTIFACTS
